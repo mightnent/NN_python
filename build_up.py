@@ -22,6 +22,15 @@ class Activation_Softmax():
         exp_values = np.exp(inputs-np.max(inputs,axis=1,keepdims=True))
         prob = exp_values/np.sum(exp_values,axis=1,keepdims=True)
         self.output = prob
+    
+    def backward(self,dvalues):
+        self.dinputs = np.empty_like(dvalues)
+        #enumerate output and gradient
+        for index, (single_output,single_dvalues) in enumerate(zip(self.output,dvalues)):
+            #flatten
+            single_output = single_output.reshape(-1,1)
+            jm = np.diagflat(single_output) - np.dot(single_output,single_output.T)
+            self.dinputs[index] = np.dot(jm,single_dvalues)
 
 class Loss():
     def calculate(self,output,y):
