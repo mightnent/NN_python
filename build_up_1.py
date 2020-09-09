@@ -48,6 +48,28 @@ class Loss_CategoricalCrossEntropy(Loss):
         #print(neg_log_likelihood)
         return neg_log_likelihood
 
+class Activation_Softmax_Loss_CCE():
+    def __init__(self):
+        self.activation = Activation_Softmax()
+        self.loss = Loss_CategoricalCrossEntropy()
+
+    def forward(self,inputs,y_true):
+        self.activation.forward(inputs)
+        self.output = self.activation.output
+        return self.loss.calculate(self.output,y_true)
+    
+    def backward(self,dvalues,y_true):
+        samples = len(dvalues)
+        #if labels are one hot, turn into discrete value
+        if len(y_true.shape) == 2:
+            y_true = np.argmax(y_true,axis=1)
+        
+        self.dinputs = dvalues.copy()
+        #calculate gradient
+        self.dinputs[range(samples,y_true)] -=1
+        #normalize gradient
+        self.dinputs = self.dinputs/samples
+
 X,y = spiral_data(100,3)
 
 layer1 = Layer_Dense(2,3)
